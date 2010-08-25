@@ -63,6 +63,7 @@ module ITest
       require 'java'
       ENV["CI_REPORTS"] = '#{test_reports_dir}';
       begin;
+        require 'rubygems';
         gem 'ci_reporter';
         require 'ci/reporter/rake/test_unit_loader.rb';
       rescue LoadError;
@@ -74,7 +75,7 @@ HEADER
             end.join("\n")
             f.write test_content
           end
-          ruby "-rubygems #{test_script_filename}"
+          ruby test_script_filename
         end
       end
     end
