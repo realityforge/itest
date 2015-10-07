@@ -1,4 +1,33 @@
 module ITest
+  class << self
+    def define_test(pattern, options = {}, &block)
+      buildr_project = options[:buildr_project]
+
+      if buildr_project.nil? && Buildr.application.current_scope.size > 0
+        buildr_project = Buildr.project(Buildr.application.current_scope.join(':')) rescue nil
+      end
+
+      build_key = options[:key] || (buildr_project.nil? ? :default : buildr_project.name.split(':').last)
+
+      if pattern
+        base_directory = File.dirname(Buildr.application.buildfile.to_s)
+        pattern = File.expand_path(pattern, base_directory)
+      end
+
+      task = ITest::TestTask.new(build_key, FileList[pattern], &block)
+
+      buildr_project.test do
+        begin
+          task(task.task_name).invoke
+        rescue
+          raise unless Buildr.options.test == :all
+        end
+      end if buildr_project
+
+      task
+    end
+  end
+
   class Config
     class << self
       attr_writer :reports_dir
