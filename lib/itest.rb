@@ -33,6 +33,8 @@ module ITest
     attr_reader :filelist
     attr_reader :target_dir
 
+    attr_reader :task_name
+
     def initialize(test_key, filelist)
       @test_key, @filelist = test_key, filelist
       @clobber_dir = true
@@ -56,7 +58,7 @@ module ITest
     def define
       namespace self.namespace_key do
         desc self.description || "Run the #{self.test_key} tests."
-        task(self.test_key) do
+        t = task(self.test_key) do
           test_script_filename = self.script_filename
           FileUtils.mkdir_p File.dirname(test_script_filename)
           test_reports_dir = self.reports_dir
@@ -79,6 +81,7 @@ HEADER
           ruby_command = Util.win_os? ? 'jruby' : 'ruby'
           sh "bundle exec #{ruby_command} #{test_script_filename}"
         end
+        @task_name = t.name
       end
     end
   end
